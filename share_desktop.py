@@ -3,12 +3,18 @@ import numpy as np
 from flask import Flask, Response, render_template, request, redirect
 import pyautogui
 import mss
+import socket
 
 app = Flask(__name__)
 
 token = "vjgj4847thgkfoed928374uthgkfoe90394uthfg"
 
-LOCAL_DEV = True
+def is_local_dev():
+    hostname = socket.gethostname()
+    local_ip = socket.gethostbyname(hostname)
+    return local_ip.startswith("192.168.") or local_ip.startswith("10.") or local_ip.startswith("127.")
+
+LOCAL_DEV = is_local_dev()
 
 @app.route('/keypress', methods=['POST'])
 def handle_keypress():
@@ -62,28 +68,6 @@ def handle_mousemove():
     y = request.args.get('y', type=int)
     if not LOCAL_DEV:
         pyautogui.moveTo(x, y)
-    return '', 204
-
-@app.route('/click', methods=['GET'])
-def handle_click():
-    auth = request.cookies.get('auth')
-    if auth != token:
-        return '', 401
-    cx = request.args.get('x', type=int)
-    cy = request.args.get('y', type=int)
-    cbutton = request.args.get('button', type=int)
-
-    button = 'left'
-    if cbutton == 2:
-        button = 'right'
-
-
-    if LOCAL_DEV:
-        current_mouse_x, current_mouse_y = pyautogui.position()
-        pyautogui.click(cx, cy, button=button)
-        pyautogui.moveTo(current_mouse_x, current_mouse_y)
-    else:
-        pyautogui.click(cx, cy)
     return '', 204
 
 def generate_frames():

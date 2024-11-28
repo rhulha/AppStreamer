@@ -17,7 +17,7 @@
     </style>
 </head>
 <body>
-    <img id="cap" src="/video_feed" width="{{ width }}" height="{{ height }}">
+    <img id="cap" src="/video_feed" width="{{ width }}" height="{{ height }}" draggable="true" ondragstart="event.preventDefault();">
     <div id="mc"></div>
     <script>
         let cap = document.getElementById('cap');
@@ -27,28 +27,32 @@
             event.preventDefault();
         });
 
+        
+
         let isDragging = false;
 
         cap.addEventListener('mousedown', function(event) {
             isDragging = true;
             console.log('mousedown:', event.offsetX, event.offsetY, event.button);
             fetch('/mousedown?x=' + event.offsetX + '&y=' + event.offsetY+"&button="+event.button);
+            mc.innerText = "mousedown";
         });
 
         cap.addEventListener('mouseup', function(event) {
             isDragging = false;
             console.log('mouseup:', event.offsetX, event.offsetY, event.button);
             fetch('/mouseup?x=' + event.offsetX + '&y=' + event.offsetY+"&button="+event.button);
+            mc.innerText = "mouseup";
         });
 
         let lastSent = 0;
         cap.addEventListener('mousemove', function(event) {
             const now = Date.now();
-            if (now - lastSent >= isDragging?20:200) {
+            if (now - lastSent >= (isDragging?20:200)) {
                 lastSent = now;
                 fetch('/mousemove?x=' + event.offsetX + '&y=' + event.offsetY);
+                mc.innerText = `(${event.offsetX} of {{ width }}, ${event.offsetY}) of {{ height }}`;
             }
-            mc.innerText = `(${event.offsetX} of {{ width }}, ${event.offsetY}) of {{ height }}`;
         });
 
         document.addEventListener('keydown', function(event) {
